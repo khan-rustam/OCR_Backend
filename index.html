@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OCR Receipt Scanner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        label {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        #fileName {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:disabled {
+            background-color: #90caf9;
+            cursor: not-allowed;
+        }
+        .results {
+            text-align: left;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .results p {
+            margin: 5px 0;
+        }
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            margin-top: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OCR Receipt Scanner</h1>
+        <input type="file" id="fileInput" onchange="showFileName()">
+        <label for="fileInput">Choose File</label>
+        <div id="fileName"></div>
+        <button id="uploadBtn" onclick="uploadFile()">Upload</button>
+        <div class="loader" id="loader"></div>
+
+        <div class="results" id="results" style="display:none;">
+            <p><strong>Date:</strong> <span id="date"></span></p>
+            <p><strong>Total:</strong> <span id="total"></span></p>
+            <p><strong>Raw Text:</strong></p>
+            <pre id="raw_text"></pre>
+        </div>
+    </div>
+
+    <script>
+        function showFileName() {
+            const input = document.getElementById("fileInput");
+            const fileNameDiv = document.getElementById("fileName");
+            if (input.files.length > 0) {
+                fileNameDiv.textContent = "File uploaded: " + input.files[0].name;
+            } else {
+                fileNameDiv.textContent = "";
+            }
+        }
+
+        async function uploadFile() {
+            const input = document.getElementById("fileInput");
+            if (input.files.length === 0) {
+                alert("Please select a file first!");
+                return;
+            }
+
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const uploadBtn = document.getElementById("uploadBtn");
+            const loader = document.getElementById("loader");
+            const results = document.getElementById("results");
+
+            uploadBtn.disabled = true;
+            loader.style.display = "block";
+            results.style.display = "none";
+
+            // Replace with your Colab Ngrok URL
+            const url = "https://ocr-backend-2-1rzu.onrender.com/upload";
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await response.json();
+                console.log(data);
+
+                document.getElementById("date").innerText = data.date || "Not found";
+                document.getElementById("total").innerText = data.total || "Not found";
+                document.getElementById("raw_text").innerText = data.text || "No text detected";
+
+
+                results.style.display = "block";
+            } catch (err) {
+                console.error(err);
+                alert("Error uploading file");
+            } finally {
+                uploadBtn.disabled = false;
+                loader.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
