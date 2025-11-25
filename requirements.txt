@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pytesseract
+opencv-python
+Pillow
+numpy
+python-multipart
+easyocr
+torch
+tesseract
